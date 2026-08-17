@@ -1,0 +1,82 @@
+[
+    {
+        "error_number": 1,
+        "test_index": 5,
+        "actual_class": "100",
+        "actual_class_index": 1,
+        "predicted_class": "10",
+        "predicted_class_index": 0,
+        "confidence": 0.4928845465183258,
+        "saved_image": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/results/misclassified/error_01_actual_100_predicted_10.png"
+    },
+    {
+        "error_number": 2,
+        "test_index": 25,
+        "actual_class": "2000",
+        "actual_class_index": 4,
+        "predicted_class": "20",
+        "predicted_class_index": 2,
+        "confidence": 0.48264771699905396,
+        "saved_image": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/results/misclassified/error_02_actual_2000_predicted_20.png"
+    },
+    {
+        "error_number": 3,
+        "test_index": 38,
+        "actual_class": "200",
+        "actual_class_index": 3,
+        "predicted_class": "10",
+        "predicted_class_index": 0,
+        "confidence": 0.8049184083938599,
+        "saved_image": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/results/misclassified/error_03_actual_200_predicted_10.png"
+    },
+    {
+        "error_number": 4,
+        "test_index": 50,
+        "actual_class": "20",
+        "actual_class_index": 2,
+        "predicted_class": "500",
+        "predicted_class_index": 6,
+        "confidence": 0.47183921933174133,
+        "saved_image": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/results/misclassified/error_04_actual_20_predicted_500.png"
+    },
+    {
+        "error_number": 5,
+        "test_index": 55,
+        "actual_class": "20",
+        "actual_class_index": 2,
+        "predicted_class": "50",
+        "predicted_class_index": 5,
+        "confidence": 0.5026673078536987,
+        "saved_image": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/results/misclassified/error_05_actual_20_predicted_50.png"
+    },
+    {
+        "error_number": 6,
+        "test_index": 62,
+        "actual_class": "500",
+        "actual_class_index": 6,
+        "predicted_class": "Background",
+        "predicted_class_index": 7,
+        "confidence": 0.8332462906837463,
+        "saved_image": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/results/misclassified/error_06_actual_500_predicted_Background.png"
+    },
+    {
+        "error_number": 7,
+        "test_index": 74,
+        "actual_class": "50",
+        "actual_class_index": 5,
+        "predicted_class": "10",
+        "predicted_class_index": 0,
+        "confidence": 0.4489465057849884,
+        "saved_image": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/results/misclassified/error_07_actual_50_predicted_10.png"
+    },
+    {
+        "error_number": 8,
+        "test_index": 81,
+        "actual_class": "50",
+        "actual_class_index": 5,
+        "predicted_class": "100",
+        "predicted_class_index": 1,
+        "confidence": 0.3869646191596985,
+        "saved_image": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/results/misclassified/error_08_actual_50_predicted_100.png"
+    }
+]

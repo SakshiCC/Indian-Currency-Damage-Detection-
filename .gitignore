@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+
+# Large datasets
+denomination/data/
+
+# Trained model files
+*.h5
+*.keras
+*.weights.h5
+
+# Python cache
+*.pyc

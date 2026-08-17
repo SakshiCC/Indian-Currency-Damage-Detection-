@@ -1,0 +1,131 @@
+{
+    "model": "best_improved_currency_efficientnetb0.keras",
+    "total_test_images": 91,
+    "correct_predictions": 89,
+    "incorrect_predictions": 2,
+    "accuracy": 0.978021978021978,
+    "accuracy_percent": 97.8021978021978,
+    "errors": [
+        {
+            "image": "500__233.jpg",
+            "image_path": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/data/Indian currency dataset v1/test/500__233.jpg",
+            "actual": "500",
+            "predicted": "Background",
+            "confidence": 0.8842397928237915,
+            "confidence_percent": 88.42398071289062
+        },
+        {
+            "image": "50__274.jpg",
+            "image_path": "/Users/yash/Documents/Yash/Symbiosis university/Msc CA sem 3/IMAGE PROCESSING /Currency-note-recognition/denomination/data/Indian currency dataset v1/test/50__274.jpg",
+            "actual": "50",
+            "predicted": "Background",
+            "confidence": 0.6054808497428894,
+            "confidence_percent": 60.5480842590332
+        }
+    ],
+    "errors_by_actual_class": {
+        "10": 0,
+        "100": 0,
+        "20": 0,
+        "200": 0,
+        "2000": 0,
+        "50": 1,
+        "500": 1,
+        "Background": 0
+    },
+    "confusion_pairs": {
+        "500 \u2192 Background": 1,
+        "50 \u2192 Background": 1
+    },
+    "confusion_matrix": [
+        [
+            7,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            14,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            12,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            15,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            11,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            0,
+            12,
+            0,
+            1
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            10,
+            1
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            8
+        ]
+    ],
+    "low_confidence_correct_predictions": [
+        {
+            "image": "10__206.jpg",
+            "actual": "10",
+            "predicted": "10",
+            "confidence": 0.6289410591125488,
+            "confidence_percent": 62.89410400390625
+        }
+    ]
+}
