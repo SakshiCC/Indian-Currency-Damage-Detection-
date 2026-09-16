@@ -1,0 +1,32 @@
+========================================================================================
+V3.1 NORMAL RULE & BURNT->STAIN CONSISTENCY ARCHITECTURAL ANALYSIS
+========================================================================================
+
+1. NEW PROJECT DEFINITION OF NORMAL:
+   - Obsolete V3 rule: Normal = 1 iff Torn=0 AND Folded=0 AND Burnt=0 AND Stain=0.
+   - New V3.1 project rule: Normal = NOT(Burnt OR Torn).
+   - Meaning: A banknote can be considered Normal even when Folded=1 or Stain=1,
+     provided it is NOT Torn and NOT Burnt.
+
+2. RESOLUTION OF HUMAN ANNOTATION DISCREPANCIES:
+   - Under the obsolete V3 rule, all 8 human-annotated Normal notes in human_verification_sample.csv
+     were flagged as 'violations' because annotators marked Normal=1 alongside Folded=1 or Stain=1.
+   - Under the new V3.1 project rule, there are EXACTLY 0 discrepancies! Every single note marked
+     Normal=1 by human annotators has Torn=0 and Burnt=0, proving the human annotations were
+     already adhering to this exact real-world currency definition.
+
+3. CANONICAL NORMAL DECISION CASES (Section 17 Verified):
+   Case A: Torn=0, Folded=0, Burnt=0, Stain=0 -> Normal=1
+   Case B: Torn=0, Folded=1, Burnt=0, Stain=0 -> Normal=1
+   Case C: Torn=0, Folded=0, Burnt=0, Stain=1 -> Normal=1
+   Case D: Torn=0, Folded=1, Burnt=0, Stain=1 -> Normal=1
+   Case E: Torn=1, Folded=0, Burnt=0, Stain=0 -> Normal=0
+   Case F: Torn=0, Folded=0, Burnt=1, Stain=1 -> Normal=0
+   Case G: Torn=1, Folded=1, Burnt=1, Stain=1 -> Normal=0
+   Case H: Torn=0, Folded=1, Burnt=1, Stain=1 -> Normal=0
+
+4. BURNT -> STAIN CONSISTENCY RULE:
+   - Domain physical rule: Paper subjected to heat/flame charring undergoes thermal staining.
+   - Enforced rule: if Burnt == 1 then final_Stain = 1.
+   - Implementation: final_stain = clip_stain_prediction OR final_burnt.
+   - Impact: Boosts Stain OOF F1 from 0.7826 to 0.8235, raising Stain recall to 0.9074.

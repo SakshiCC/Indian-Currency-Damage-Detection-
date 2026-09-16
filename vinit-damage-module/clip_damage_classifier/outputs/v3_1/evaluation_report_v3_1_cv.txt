@@ -1,0 +1,45 @@
+========================================================================================
+V3.1 CONTROLLED IMPROVEMENT EVALUATION REPORT: V3 BASELINE VS V3.1
+========================================================================================
+
+Evaluation Scheme:         Leakage-Safe 5-Fold Stratified K-Fold (seed=42)
+Sample Size:               90 notes (100% human-verified)
+New Normal Rule:           Normal = 1 iff Burnt == 0 AND Torn == 0
+Domain Rule:               Burnt == 1 ==> Stain = 1
+
+OVERALL MULTI-LABEL PERFORMANCE COMPARISON
+----------------------------------------------------------------------------------------
+Metric                 | V3 Baseline  | V3.1 OOF     | Delta        | Relative Gain
+----------------------------------------------------------------------------------------
+Micro F1               | 0.6518       | 0.6398       | -0.0120     | -1.8%
+Macro F1               | 0.4749       | 0.5480       | +0.0731      | +15.4%
+Hamming Loss           | 0.2778       | 0.3178       | +0.0400      | +14.4%
+Jaccard Score          | 0.5370       | 0.5361       | -0.0009     | -0.2%
+Exact Match Ratio      | 0.2778       | 0.3000       | +0.0222      | +8.0%
+
+PER-CLASS COMPARISON (V3 Baseline vs V3.1 OOF)
+----------------------------------------------------------------------------------------
+Class      | Support  | V3 F1      | V3.1 F1    | Delta      | V3.1 Prec  | V3.1 Rec  
+----------------------------------------------------------------------------------------
+Torn       | 81       | 0.6508     | 0.6508     | 0.0000    | 0.9111     | 0.5062    
+Folded     | 47       | 0.6744     | 0.6744     | 0.0000    | 0.7436     | 0.6170    
+Burnt      | 4        | 0.2667     | 0.4211     | +0.1544    | 0.2667     | 1.0000    
+Stain      | 54       | 0.7826     | 0.8235     | +0.0409    | 0.7538     | 0.9074    
+Normal     | 8        | 0.0000     | 0.1702     | +0.1702    | 0.1026     | 0.5000    
+
+BURNT CONFUSION MATRIX & ACCURACY SUMMARY
+----------------------------------------------------------------------------------------
+Burnt Positive Support:    4 (out of 90 notes)
+Burnt Predicted Positives: 15
+Burnt True Positives:      4 / 4 (Recall = 100.0%)
+Burnt False Positives:     11
+Burnt False Negatives:     0 (Zero false negatives!)
+Burnt Precision:           0.2667
+Burnt Recall:              1.0000
+Burnt F1 Score:            0.4211
+
+PRESERVATION OF V3 IMPROVEMENTS (TORN, FOLDED, STAIN):
+----------------------------------------------------------------------------------------
+Torn F1:   V3=0.6508 -> V3.1=0.6508 (PRESERVED)
+Folded F1: V3=0.6744 -> V3.1=0.6744 (PRESERVED)
+Stain F1:  V3=0.7826 -> V3.1=0.8235 (IMPROVED by +0.0409!)

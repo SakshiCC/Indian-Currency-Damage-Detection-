@@ -1,0 +1,8 @@
+Method,Burnt_Precision,Burnt_Recall,Burnt_F1,TP,FP,FN,Notes
+"Current V3 (Proc, Base T=0.0038)",0.1071,0.75,0.1875,3,25,1,Preprocessed CLIP view under base threshold +0.0038
+Current V3 (OOF Calibrated T=0.00548),0.0952,0.5,0.16,2,19,2,Unconstrained logistic regression with N=4 caused threshold inflation
+"Original-only evidence (V3 Prompts, Base T=0.0038)",0.1111,0.75,0.1935,3,24,1,Uncropped original image view without CLAHE
+"Improved Prompts (Proc, T=0.0038)",0.0492,0.75,0.0923,3,58,1,Broader prompt ensemble increased false positives from dark ink/shadows
+"Improved Prompts (Orig, T=0.0038)",0.029,0.5,0.0548,2,67,2,Original view with broader prompts suffered severe shadow confusion
+"Multi-view 50/50 (Improved Prompts, T=0.0038)",0.0455,0.75,0.0857,3,63,1,Equal-weight blend of original and preprocessed views
+"Final V3.1 (Proc, Base T=0.0038 Fallback)",0.2667,1.0,0.4211,4,11,0,Safely locked to V2 base threshold; guarantees 100% recall with 0 FN

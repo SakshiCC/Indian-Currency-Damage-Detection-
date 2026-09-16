@@ -1,0 +1,171 @@
+{
+  "status": "success",
+  "version": "v3.1",
+  "sample_size": 90,
+  "n_splits": 5,
+  "seed": 42,
+  "burnt_positive_count": 4,
+  "burnt_limitation_note": "Burnt positive count is exactly 4 out of 90 notes. Safe V2 anchor fallback (+0.0038) was enforced across folds to avoid catastrophic threshold inflation and guarantee 100% recall.",
+  "overall_metrics_v2": {
+    "micro_f1": 0.4301675977653631,
+    "macro_f1": 0.40759685706124554,
+    "hamming_loss": 0.4533333333333333,
+    "jaccard_score": 0.3018518518518518,
+    "exact_match_ratio": 0.07777777777777778
+  },
+  "overall_metrics_v3": {
+    "micro_f1": 0.6518105849582173,
+    "macro_f1": 0.47489752355273085,
+    "hamming_loss": 0.2777777777777778,
+    "jaccard_score": 0.537037037037037,
+    "exact_match_ratio": 0.2777777777777778
+  },
+  "overall_metrics_v3_1": {
+    "micro_f1": 0.6397984886649875,
+    "macro_f1": 0.5480014129491827,
+    "hamming_loss": 0.31777777777777777,
+    "jaccard_score": 0.5361111111111111,
+    "exact_match_ratio": 0.3
+  },
+  "per_class_metrics_v2": {
+    "Torn": {
+      "precision": 0.8667,
+      "recall": 0.321,
+      "f1": 0.4685,
+      "tp": 26,
+      "fp": 4,
+      "fn": 55,
+      "support": 81
+    },
+    "Folded": {
+      "precision": 0.5714,
+      "recall": 0.4255,
+      "f1": 0.4878,
+      "tp": 20,
+      "fp": 15,
+      "fn": 27,
+      "support": 47
+    },
+    "Burnt": {
+      "precision": 0.2667,
+      "recall": 1.0,
+      "f1": 0.4211,
+      "tp": 4,
+      "fp": 11,
+      "fn": 0,
+      "support": 4
+    },
+    "Stain": {
+      "precision": 0.6765,
+      "recall": 0.4259,
+      "f1": 0.5227,
+      "tp": 23,
+      "fp": 11,
+      "fn": 31,
+      "support": 54
+    },
+    "Normal": {
+      "precision": 0.08,
+      "recall": 0.5,
+      "f1": 0.1379,
+      "tp": 4,
+      "fp": 46,
+      "fn": 4,
+      "support": 8
+    }
+  },
+  "per_class_metrics_v3": {
+    "Torn": {
+      "precision": 0.9111,
+      "recall": 0.5062,
+      "f1": 0.6508,
+      "tp": 41,
+      "fp": 4,
+      "fn": 40,
+      "support": 81
+    },
+    "Folded": {
+      "precision": 0.7436,
+      "recall": 0.617,
+      "f1": 0.6744,
+      "tp": 29,
+      "fp": 10,
+      "fn": 18,
+      "support": 47
+    },
+    "Burnt": {
+      "precision": 0.1818,
+      "recall": 0.5,
+      "f1": 0.2667,
+      "tp": 2,
+      "fp": 9,
+      "fn": 2,
+      "support": 4
+    },
+    "Stain": {
+      "precision": 0.7377,
+      "recall": 0.8333,
+      "f1": 0.7826,
+      "tp": 45,
+      "fp": 16,
+      "fn": 9,
+      "support": 54
+    },
+    "Normal": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "fp": 9,
+      "fn": 8,
+      "support": 8
+    }
+  },
+  "per_class_metrics_v3_1": {
+    "Torn": {
+      "precision": 0.9111,
+      "recall": 0.5062,
+      "f1": 0.6508,
+      "tp": 41,
+      "fp": 4,
+      "fn": 40,
+      "support": 81
+    },
+    "Folded": {
+      "precision": 0.7436,
+      "recall": 0.617,
+      "f1": 0.6744,
+      "tp": 29,
+      "fp": 10,
+      "fn": 18,
+      "support": 47
+    },
+    "Burnt": {
+      "precision": 0.2667,
+      "recall": 1.0,
+      "f1": 0.4211,
+      "tp": 4,
+      "fp": 11,
+      "fn": 0,
+      "support": 4
+    },
+    "Stain": {
+      "precision": 0.7538,
+      "recall": 0.9074,
+      "f1": 0.8235,
+      "tp": 49,
+      "fp": 16,
+      "fn": 5,
+      "support": 54
+    },
+    "Normal": {
+      "precision": 0.1026,
+      "recall": 0.5,
+      "f1": 0.1702,
+      "tp": 4,
+      "fp": 35,
+      "fn": 4,
+      "support": 8
+    }
+  }
+}

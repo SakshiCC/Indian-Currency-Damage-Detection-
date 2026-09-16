@@ -1,0 +1,148 @@
+{
+  "version": "v3",
+  "description": "Vinit V3 dynamic threshold calibration parameters",
+  "anchors_base_v2": {
+    "Torn": -0.0005,
+    "Folded": 0.0,
+    "Burnt": 0.0038,
+    "Stain": 0.0
+  },
+  "safety_bounds": {
+    "min_threshold": -0.008,
+    "max_threshold": 0.008
+  },
+  "classes": {
+    "Torn": {
+      "category": "Torn",
+      "status": "fallback_nonpositive_evidence",
+      "w_evidence": -0.003225,
+      "intercept": 2.312144,
+      "feature_names": [
+        "area_ratio",
+        "edge_density",
+        "contrast"
+      ],
+      "w_context": [
+        0.247634,
+        -0.488198,
+        0.363798
+      ],
+      "scaler_means": {
+        "area_ratio": 0.549026,
+        "edge_density": 0.107997,
+        "contrast": 0.407005
+      },
+      "scaler_stds": {
+        "area_ratio": 0.286268,
+        "edge_density": 0.09437,
+        "contrast": 0.075671
+      },
+      "cv_f1_mean": 0.9472,
+      "v2_precision": 0.8667,
+      "v2_recall": 0.321,
+      "v2_f1": 0.4685,
+      "dynamic_precision": 0.8667,
+      "dynamic_recall": 0.321,
+      "dynamic_f1": 0.4685
+    },
+    "Folded": {
+      "category": "Folded",
+      "status": "calibrated",
+      "w_evidence": 0.024352,
+      "intercept": 0.125267,
+      "feature_names": [
+        "edge_density",
+        "contrast",
+        "area_ratio"
+      ],
+      "w_context": [
+        0.943572,
+        -0.547267,
+        -0.067798
+      ],
+      "scaler_means": {
+        "edge_density": 0.107997,
+        "contrast": 0.407005,
+        "area_ratio": 0.549026
+      },
+      "scaler_stds": {
+        "edge_density": 0.09437,
+        "contrast": 0.075671,
+        "area_ratio": 0.286268
+      },
+      "cv_f1_mean": 0.6742,
+      "v2_precision": 0.5714,
+      "v2_recall": 0.4255,
+      "v2_f1": 0.4878,
+      "dynamic_precision": 0.725,
+      "dynamic_recall": 0.617,
+      "dynamic_f1": 0.6667
+    },
+    "Burnt": {
+      "category": "Burnt",
+      "status": "fallback_inferior_to_v2",
+      "w_evidence": 0.017003,
+      "intercept": -3.081799,
+      "feature_names": [
+        "stain_evidence",
+        "dark_ratio",
+        "contrast"
+      ],
+      "w_context": [
+        0.149905,
+        0.046791,
+        -0.066156
+      ],
+      "scaler_means": {
+        "stain_evidence": -0.001561,
+        "dark_ratio": 0.260702,
+        "contrast": 0.407005
+      },
+      "scaler_stds": {
+        "stain_evidence": 0.004812,
+        "dark_ratio": 0.299765,
+        "contrast": 0.075671
+      },
+      "cv_f1_mean": 0.0,
+      "v2_precision": 0.2667,
+      "v2_recall": 1.0,
+      "v2_f1": 0.4211,
+      "dynamic_precision": 0.5,
+      "dynamic_recall": 0.25,
+      "dynamic_f1": 0.3333
+    },
+    "Stain": {
+      "category": "Stain",
+      "status": "calibrated",
+      "w_evidence": 0.021373,
+      "intercept": 0.422115,
+      "feature_names": [
+        "dark_ratio",
+        "brightness",
+        "contrast"
+      ],
+      "w_context": [
+        -0.796025,
+        -0.42102,
+        -0.124816
+      ],
+      "scaler_means": {
+        "dark_ratio": 0.260702,
+        "brightness": 0.422966,
+        "contrast": 0.407005
+      },
+      "scaler_stds": {
+        "dark_ratio": 0.299765,
+        "brightness": 0.127689,
+        "contrast": 0.075671
+      },
+      "cv_f1_mean": 0.771,
+      "v2_precision": 0.6765,
+      "v2_recall": 0.4259,
+      "v2_f1": 0.5227,
+      "dynamic_precision": 0.7419,
+      "dynamic_recall": 0.8519,
+      "dynamic_f1": 0.7931
+    }
+  }
+}
