@@ -1,152 +1,311 @@
-"""
-currency_pipeline.py
-============================================================
-Top-Level Orchestration Pipeline for Indian Currency Note Analysis.
+from __future__ import annotations
 
-Coordinates:
-  1. Yash's Denomination Predictor (via yash_adapter)
-  2. Vinit's V3.1 Multi-Label Damage Classifier (via vinit_adapter)
-  3. Sakshi's clean interface hook (via sakshi_interface)
-
-Preprocessing separation:
-  Original Image
-     ├─> Yash (internal 224x224 RGB conversion & tensor creation)
-     └─> Vinit (OpenCV note cropping, perspective correction, CLAHE, CLIP ViT-B/32)
-============================================================
-"""
-
-import logging
 from pathlib import Path
-from typing import Dict, Any, Union, Optional, List
-import numpy as np
-from PIL import Image
+from typing import Any, Dict
 
-from integration.yash_adapter import get_yash_adapter, YashDenominationAdapter
-from integration.vinit_adapter import get_vinit_adapter, VinitDamageAdapter
-from integration.sakshi_interface import get_active_damage_labels, get_sakshi_handoff_payload
+from integration.yash_adapter import (
+    denomination_adapter,
+)
 
-logger = logging.getLogger("integration.currency_pipeline")
+from integration.vinit_adapter import (
+    damage_adapter,
+)
+
+from integration.sakshi_interface import (
+    get_active_damage_labels,
+    get_sakshi_handoff_payload,
+    run_sakshi_assessment,
+)
 
 
-class CurrencyPipeline:
-    """
-    Unified, multi-modal pipeline coordinating Yash's denomination recognition
-    and Vinit's V3.1 multi-label damage classification.
-    """
+# ============================================================
+# PIPELINE
+# ============================================================
 
-    def __init__(
-        self,
-        device: str = "cpu",
-        calibration_version: str = "v3.1",
-        use_preprocessing: bool = True,
-        confidence_threshold: float = 0.0,
-    ):
-        self.device = device
-        self.calibration_version = calibration_version
-        self.use_preprocessing = use_preprocessing
+class CurrencyAssessmentPipeline:
 
-        # Adapters maintain singletons to prevent repeated model reloading
-        self.denomination_adapter = get_yash_adapter()
-        self.damage_adapter = get_vinit_adapter(
-            device=device,
-            calibration_version=calibration_version,
+    def __init__(self):
+
+        self.denomination_adapter = (
+            denomination_adapter
         )
+
+        self.damage_adapter = (
+            damage_adapter
+        )
+
+    # ========================================================
+    # ANALYZE
+    # ========================================================
 
     def analyze(
         self,
-        image_input: Union[str, Path, np.ndarray, Image.Image],
+        image_input,
+        run_severity: bool = True,
     ) -> Dict[str, Any]:
-        """
-        Run complete end-to-end analysis on an Indian currency note image.
 
-        Flow:
-          Input Image
-             ├─> Yash Denomination Predictor (EfficientNetB0)
-             └─> Vinit V3.1 Damage Classifier (CLIP ViT-B/32 + Dynamic Thresholds)
-          Combined Schema
-             └─> Sakshi Handoff Hook
-        """
-        img_str = str(image_input) if isinstance(image_input, (str, Path)) else None
-        filename = Path(image_input).name if isinstance(image_input, (str, Path)) else "in_memory_image"
+        image_string = str(
+            image_input
+        )
 
-        # 1. Denomination Recognition (Yash)
-        # Yash's module receives original image and applies its own 224x224 preprocessing
-        denom_res = self.denomination_adapter.predict(image_input)
+        # ====================================================
+        # 1. YASH - DENOMINATION
+        # ====================================================
 
-        # 2. Damage Classification (Vinit)
-        # Vinit's module receives original image and applies note detection, CLAHE, and CLIP
-        damage_res = self.damage_adapter.predict(image_input)
+        denomination_result = (
+            self.denomination_adapter
+            .predict(
+                image_input
+            )
+        )
 
-        # 3. Sakshi Handoff Hook
-        sakshi_active = get_active_damage_labels(damage_res)
-        sakshi_handoff = get_sakshi_handoff_payload(damage_res, image_path=img_str)
+        # ====================================================
+        # 2. VINIT - DAMAGE CLASSIFICATION
+        # ====================================================
 
-        # Format clean, consolidated denomination dictionary
-        denom_formatted = {
-            "value": denom_res.get("denomination", "Unknown"),
-            "confidence": denom_res.get("confidence", 0.0),
-            "confidence_percent": denom_res.get("confidence_percent", 0.0),
-            "class_index": denom_res.get("class_index", -1),
-            "is_background": denom_res.get("is_background", False),
-            "accepted": denom_res.get("accepted", False),
-            "available": denom_res.get("available", False),
+        damage_result = (
+            self.damage_adapter
+            .predict(
+                image_input
+            )
+        )
+
+        # ====================================================
+        # 3. SAKSHI HANDOFF
+        # ====================================================
+
+        active_damages = (
+            get_active_damage_labels(
+                damage_result
+            )
+        )
+
+        sakshi_handoff = (
+            get_sakshi_handoff_payload(
+                damage_result,
+
+                image_path=(
+                    image_string
+                ),
+
+                denomination_result=(
+                    denomination_result
+                ),
+            )
+        )
+
+        # ====================================================
+        # 4. SAKSHI SEGMENTATION / SEVERITY
+        # ====================================================
+
+        sakshi_result = None
+
+        sakshi_error = None
+
+        if run_severity:
+
+            try:
+
+                assessment = (
+                    run_sakshi_assessment(
+                        image_input=(
+                            image_input
+                        ),
+
+                        denomination_result=(
+                            denomination_result
+                        ),
+
+                        damage_result=(
+                            damage_result
+                        ),
+                    )
+                )
+
+                sakshi_result = (
+                    assessment[
+                        "result"
+                    ]
+                )
+
+            except Exception as exc:
+
+                sakshi_error = str(
+                    exc
+                )
+
+        # ====================================================
+        # 5. FORMAT DENOMINATION
+        # ====================================================
+
+        denomination = {
+
+            "value":
+                denomination_result.get(
+                    "denomination"
+                ),
+
+            "confidence":
+                denomination_result.get(
+                    "confidence"
+                ),
+
+            "confidence_percent":
+                denomination_result.get(
+                    "confidence_percent"
+                ),
+
+            "class_index":
+                denomination_result.get(
+                    "class_index"
+                ),
+
+            "is_background":
+                denomination_result.get(
+                    "is_background",
+                    False,
+                ),
+
+            "accepted":
+                denomination_result.get(
+                    "accepted"
+                ),
+
+            "available":
+                denomination_result.get(
+                    "available",
+                    False,
+                ),
         }
-        if not denom_res.get("available", False) and "reason" in denom_res:
-            denom_formatted["status_note"] = denom_res["reason"]
 
-        # Format clean, consolidated damage dictionary
-        damage_formatted = {
-            "raw_labels": damage_res.get("raw_damage_labels", {}),
-            "final_labels": damage_res.get("final_damage_labels", {}),
-            "damage_labels": damage_res.get("damage_labels", {}),
-            "predicted_labels": damage_res.get("predicted_labels", []),
-            "evidence_scores": damage_res.get("evidence_scores", {}),
-            "dynamic_thresholds": damage_res.get("dynamic_thresholds", {}),
-            "classification_status": damage_res.get("classification_status", "uncertain"),
-            "min_evidence_margin": damage_res.get("min_evidence_margin", 0.0),
-            "calibration_version": damage_res.get("calibration_version", self.calibration_version),
-            "normal_rule": damage_res.get("normal_rule", "NOT(Burnt OR Torn)"),
-            "burnt_implies_stain": damage_res.get("burnt_implies_stain", True),
+        # ====================================================
+        # 6. FORMAT DAMAGE
+        # ====================================================
+
+        damage = {
+
+            "raw_labels":
+                damage_result.get(
+                    "raw_damage_labels"
+                ),
+
+            "final_labels":
+                damage_result.get(
+                    "final_damage_labels"
+                ),
+
+            "damage_labels":
+                damage_result.get(
+                    "damage_labels"
+                ),
+
+            "predicted_labels":
+                damage_result.get(
+                    "predicted_labels"
+                ),
+
+            "evidence_scores":
+                damage_result.get(
+                    "evidence_scores",
+                    {},
+                ),
+
+            "dynamic_thresholds":
+                damage_result.get(
+                    "dynamic_thresholds",
+                    {},
+                ),
+
+            "classification_status":
+                damage_result.get(
+                    "classification_status"
+                ),
+
+            "min_evidence_margin":
+                damage_result.get(
+                    "min_evidence_margin"
+                ),
+
+            "calibration_version":
+                damage_result.get(
+                    "calibration_version"
+                ),
+
+            "normal_rule":
+                damage_result.get(
+                    "normal_rule"
+                ),
+
+            "burnt_implies_stain":
+                damage_result.get(
+                    "burnt_implies_stain"
+                ),
         }
+
+        # ====================================================
+        # FINAL PIPELINE RESULT
+        # ====================================================
 
         return {
-            "success": bool(damage_res.get("success", False)),
+
+            "success": True,
+
             "image": {
-                "path": img_str,
-                "filename": filename,
+                "path":
+                    image_string,
+
+                "filename":
+                    Path(
+                        image_string
+                    ).name,
             },
-            "denomination": denom_formatted,
-            "damage": damage_formatted,
-            "preprocessing": damage_res.get("preprocessing_metadata", {}),
-            "sakshi_active_damages": sakshi_active,
-            "sakshi_handoff": sakshi_handoff,
+
+            "denomination":
+                denomination,
+
+            "damage":
+                damage,
+
+            "preprocessing":
+                damage_result.get(
+                    "preprocessing_metadata",
+                    {},
+                ),
+
+            "sakshi_active_damages":
+                active_damages,
+
+            "sakshi_handoff":
+                sakshi_handoff,
+
+            "severity_assessment":
+                sakshi_result,
+
+            "severity_error":
+                sakshi_error,
         }
 
-    def analyze_batch(
-        self,
-        image_inputs: List[Union[str, Path, np.ndarray, Image.Image]],
-    ) -> List[Dict[str, Any]]:
-        """Batch analysis across multiple images."""
-        return [self.analyze(img) for img in image_inputs]
+
+# ============================================================
+# SINGLETON & ALIASES
+# ============================================================
+
+currency_pipeline = (
+    CurrencyAssessmentPipeline()
+)
+
+CurrencyPipeline = CurrencyAssessmentPipeline
 
 
-_DEFAULT_PIPELINE: Optional[CurrencyPipeline] = None
-
-
-def get_default_pipeline(device: str = "cpu", calibration_version: str = "v3.1") -> CurrencyPipeline:
-    global _DEFAULT_PIPELINE
-    if _DEFAULT_PIPELINE is None:
-        _DEFAULT_PIPELINE = CurrencyPipeline(device=device, calibration_version=calibration_version)
-    return _DEFAULT_PIPELINE
+def get_default_pipeline() -> CurrencyAssessmentPipeline:
+    return currency_pipeline
 
 
 def run_currency_analysis(
-    image_input: Union[str, Path, np.ndarray, Image.Image],
-    device: str = "cpu",
-    calibration_version: str = "v3.1",
+    image_input,
+    run_severity: bool = True,
 ) -> Dict[str, Any]:
-    """
-    Convenience function for full banknote analysis.
-    """
-    pipeline = get_default_pipeline(device=device, calibration_version=calibration_version)
-    return pipeline.analyze(image_input)
+    return currency_pipeline.analyze(
+        image_input,
+        run_severity=run_severity,
+    )

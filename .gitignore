@@ -24,3 +24,16 @@ denomination/data/
 
 # Python cache
 *.pyc
+# Generated assessment outputs
+output/
+severity-module/output/
+
+# Debug/generated masks
+severity-module/debug/
+
+# Personal/manual test image
+severity-module/test_images/my_note.jpg
+
+# Temporary development scripts
+diagnose_manual_image.py
+scratch_stain.py

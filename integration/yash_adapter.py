@@ -23,10 +23,13 @@ from PIL import Image
 
 logger = logging.getLogger("integration.yash_adapter")
 
-# Ensure project root is in sys.path so src can be imported read-only
+# Ensure project root and denomination dir are in sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DENOM_DIR = PROJECT_ROOT / "denomination"
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+if str(DENOM_DIR) not in sys.path:
+    sys.path.insert(0, str(DENOM_DIR))
 
 
 class YashDenominationAdapter:
@@ -44,8 +47,10 @@ class YashDenominationAdapter:
     def _initialize(self):
         """Probes and imports Yash's predictor if dependencies exist."""
         try:
-            # Check model file exists
-            model_path = PROJECT_ROOT / "models" / "best_improved_currency_efficientnetb0.keras"
+            # Check model file exists in denomination/models or models/
+            model_path = DENOM_DIR / "models" / "best_improved_currency_efficientnetb0.keras"
+            if not model_path.exists():
+                model_path = PROJECT_ROOT / "models" / "best_improved_currency_efficientnetb0.keras"
             if not model_path.exists():
                 self._available = False
                 self._load_error = f"Model file not found at {model_path}"
@@ -148,3 +153,7 @@ def predict_denomination_safe(
 def is_yash_module_available() -> bool:
     """Check if Yash's denomination model can be executed."""
     return get_yash_adapter().is_available
+
+
+# Module-level alias for backward compatibility
+denomination_adapter = get_yash_adapter()

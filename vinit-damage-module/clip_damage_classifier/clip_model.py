@@ -40,12 +40,16 @@ class CLIPModelWrapper:
                 inp_pos = self.processor(text=POSITIVE_PROMPTS[cat], return_tensors="pt", padding=True)
                 inp_pos = {k: v.to(self.device) for k, v in inp_pos.items()}
                 pos_feats = self.model.get_text_features(**inp_pos)
+                if not isinstance(pos_feats, torch.Tensor):
+                    pos_feats = getattr(pos_feats, "pooler_output", pos_feats[0])
                 self.positive_embeddings[cat] = pos_feats / pos_feats.norm(dim=-1, keepdim=True)
 
                 # Negative
                 inp_neg = self.processor(text=NEGATIVE_PROMPTS[cat], return_tensors="pt", padding=True)
                 inp_neg = {k: v.to(self.device) for k, v in inp_neg.items()}
                 neg_feats = self.model.get_text_features(**inp_neg)
+                if not isinstance(neg_feats, torch.Tensor):
+                    neg_feats = getattr(neg_feats, "pooler_output", neg_feats[0])
                 self.negative_embeddings[cat] = neg_feats / neg_feats.norm(dim=-1, keepdim=True)
 
         print("[CLIP] Contrastive prompt embeddings cached successfully.")
@@ -56,6 +60,8 @@ class CLIPModelWrapper:
         inputs = {k: v.to(self.device) for k, v in inputs.items()}
         with torch.no_grad():
             image_feats = self.model.get_image_features(**inputs)
+            if not isinstance(image_feats, torch.Tensor):
+                image_feats = getattr(image_feats, "pooler_output", image_feats[0])
             image_feats = image_feats / image_feats.norm(dim=-1, keepdim=True)
         return image_feats
 

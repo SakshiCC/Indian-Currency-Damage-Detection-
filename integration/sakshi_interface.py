@@ -1,134 +1,466 @@
-"""
-sakshi_interface.py
-============================================================
-Exposed Interface Hook for Sakshi's Future Segmentation & Severity Module.
+from __future__ import annotations
 
-Sakshi is responsible for:
-  - Damage segmentation masks
-  - Damage localization
-  - Damage severity (% damaged area)
-
-Sakshi has NOT started her module yet.
-This module strictly exposes a clean consumption interface.
-It DOES NOT implement segmentation, masks, or severity calculations.
-============================================================
-"""
-
-from typing import Dict, Any, List, Optional
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 
-def get_damage_labels(classification_result: Dict[str, Any]) -> Dict[str, int]:
-    """
-    Extract final 5-class damage labels dictionary:
-      {'Torn': 0/1, 'Folded': 0/1, 'Burnt': 0/1, 'Stain': 0/1, 'Normal': 0/1}
-    """
-    if not classification_result or not isinstance(classification_result, dict):
-        return {"Torn": 0, "Folded": 0, "Burnt": 0, "Stain": 0, "Normal": 1}
+# ============================================================
+# PROJECT PATHS
+# ============================================================
 
-    if "damage" in classification_result and isinstance(classification_result["damage"], dict):
-        classification_result = classification_result["damage"]
+PROJECT_ROOT = (
+    Path(__file__)
+    .resolve()
+    .parents[1]
+)
 
-    if "final_labels" in classification_result and isinstance(classification_result["final_labels"], dict):
-        return dict(classification_result["final_labels"])
-
-    if "final_damage_labels" in classification_result and isinstance(classification_result["final_damage_labels"], dict):
-        return dict(classification_result["final_damage_labels"])
-
-    if "damage_labels" in classification_result and isinstance(classification_result["damage_labels"], dict):
-        return dict(classification_result["damage_labels"])
-
-    return {"Torn": 0, "Folded": 0, "Burnt": 0, "Stain": 0, "Normal": 1}
+SEVERITY_MODULE_DIR = (
+    PROJECT_ROOT
+    / "severity-module"
+)
 
 
-def get_active_damage_labels(classification_result: Dict[str, Any]) -> List[str]:
-    """
-    Extract active damage category strings, strictly EXCLUDING 'Normal'.
+# ============================================================
+# CONSTANTS
+# ============================================================
 
-    Args:
-        classification_result: Dictionary returned by DamageClassifier.classify()
-                               or CurrencyPipeline.run_analysis()
+DAMAGE_TYPES = [
+    "Torn",
+    "Folded",
+    "Burnt",
+    "Stain",
+]
 
-    Returns:
-        List of active damage classes from ["Torn", "Folded", "Burnt", "Stain"].
-        Returns [] if no damage is detected (i.e. note is Normal).
+DEFAULT_DAMAGE_LABELS = {
+    "Torn": 0,
+    "Folded": 0,
+    "Burnt": 0,
+    "Stain": 0,
+    "Normal": 1,
+}
 
-    Example:
-        >>> res = classifier.classify("note.jpg")
-        >>> get_active_damage_labels(res)
-        ['Torn', 'Stain']
-    """
-    if not classification_result or not isinstance(classification_result, dict):
-        return []
 
-    # Check if nested in 'damage' key from currency_pipeline
-    if "damage" in classification_result and isinstance(classification_result["damage"], dict):
-        classification_result = classification_result["damage"]
+# ============================================================
+# DAMAGE LABEL EXTRACTION
+# ============================================================
 
-    # 1. Inspect damage_labels / final_damage_labels dict if present
-    damage_labels = (
-        classification_result.get("final_damage_labels")
-        or classification_result.get("damage_labels")
-        or classification_result.get("final_labels")
+def get_damage_labels(
+    classification_result: Dict[str, Any],
+) -> Dict[str, int]:
+
+    if not isinstance(
+        classification_result,
+        dict,
+    ):
+        return DEFAULT_DAMAGE_LABELS.copy()
+
+    result = classification_result
+
+    nested_damage = result.get(
+        "damage"
     )
-    if isinstance(damage_labels, dict):
-        active = []
-        for cat in ["Torn", "Folded", "Burnt", "Stain"]:
-            if damage_labels.get(cat, 0) == 1:
-                active.append(cat)
-        return active
 
-    # 2. Fallback to predicted_labels list
-    predicted = classification_result.get("predicted_labels", [])
-    if isinstance(predicted, list):
-        return [lbl for lbl in predicted if lbl in ["Torn", "Folded", "Burnt", "Stain"]]
+    if isinstance(
+        nested_damage,
+        dict,
+    ):
+        result = nested_damage
 
-    return []
+    candidates = [
+        result.get(
+            "final_labels"
+        ),
+        result.get(
+            "final_damage_labels"
+        ),
+        result.get(
+            "damage_labels"
+        ),
+    ]
+
+    for candidate in candidates:
+
+        if not isinstance(
+            candidate,
+            dict,
+        ):
+            continue
+
+        labels = (
+            DEFAULT_DAMAGE_LABELS.copy()
+        )
+
+        found = False
+
+        for label in labels:
+
+            if label in candidate:
+
+                try:
+                    labels[label] = int(
+                        candidate[label]
+                    )
+
+                except (
+                    TypeError,
+                    ValueError,
+                ):
+                    labels[label] = int(
+                        bool(
+                            candidate[label]
+                        )
+                    )
+
+                found = True
+
+        if found:
+            return labels
+
+    # --------------------------------------------------------
+    # predicted_labels fallback
+    # --------------------------------------------------------
+
+    predicted = result.get(
+        "predicted_labels"
+    )
+
+    if isinstance(
+        predicted,
+        str,
+    ):
+
+        labels = {
+            "Torn": 0,
+            "Folded": 0,
+            "Burnt": 0,
+            "Stain": 0,
+            "Normal": 0,
+        }
+
+        predicted_values = [
+            item.strip()
+            for item in (
+                predicted
+                .replace(",", ";")
+                .split(";")
+            )
+            if item.strip()
+        ]
+
+        for value in predicted_values:
+
+            for label in labels:
+
+                if (
+                    value.lower()
+                    == label.lower()
+                ):
+                    labels[label] = 1
+
+        if not predicted_values:
+            labels["Normal"] = 1
+
+        return labels
+
+    return DEFAULT_DAMAGE_LABELS.copy()
 
 
-def is_damaged(classification_result: Dict[str, Any]) -> bool:
-    """
-    Returns True if any physical damage was detected, False if note is Normal.
-    """
-    return len(get_active_damage_labels(classification_result)) > 0
+# ============================================================
+# ACTIVE DAMAGE LABELS
+# ============================================================
+
+def get_active_damage_labels(
+    classification_result: Dict[str, Any],
+) -> List[str]:
+
+    labels = get_damage_labels(
+        classification_result
+    )
+
+    return [
+        label
+        for label in DAMAGE_TYPES
+        if labels.get(
+            label,
+            0,
+        ) == 1
+    ]
 
 
-def get_damage_evidence(classification_result: Dict[str, Any]) -> Dict[str, float]:
-    """
-    Returns the dictionary of CLIP contrastive evidence scores for each damage class.
-    """
-    if "damage" in classification_result and isinstance(classification_result["damage"], dict):
-        classification_result = classification_result["damage"]
-    return classification_result.get("evidence_scores", {})
+def is_damaged(
+    classification_result: Dict[str, Any],
+) -> bool:
 
+    return bool(
+        get_active_damage_labels(
+            classification_result
+        )
+    )
+
+
+# ============================================================
+# EVIDENCE
+# ============================================================
+
+def get_damage_evidence(
+    classification_result: Dict[str, Any],
+) -> Dict[str, Any]:
+
+    if not isinstance(
+        classification_result,
+        dict,
+    ):
+        return {}
+
+    result = classification_result
+
+    nested_damage = result.get(
+        "damage"
+    )
+
+    if isinstance(
+        nested_damage,
+        dict,
+    ):
+        result = nested_damage
+
+    evidence = result.get(
+        "evidence_scores",
+        {},
+    )
+
+    if isinstance(
+        evidence,
+        dict,
+    ):
+        return evidence
+
+    return {}
+
+
+# ============================================================
+# HANDOFF PAYLOAD
+# ============================================================
 
 def get_sakshi_handoff_payload(
     classification_result: Dict[str, Any],
     image_path: Optional[str] = None,
+    denomination_result:
+        Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """
-    Constructs the structured handoff payload designed specifically for
-    Sakshi's segmentation module to consume.
 
-    Returns:
-        Dict containing:
-          - active_damage_labels: List[str] (e.g. ['Torn', 'Stain'])
-          - is_damaged: bool
-          - evidence_scores: Dict[str, float]
-          - preprocessing_metadata: Dict[str, Any] (crop boundaries, note detection)
-          - image_path: Optional[str]
-    """
-    if "damage" in classification_result and isinstance(classification_result["damage"], dict):
-        inner = classification_result["damage"]
-    else:
-        inner = classification_result
+    result = classification_result
 
-    active = get_active_damage_labels(inner)
+    if not isinstance(
+        result,
+        dict,
+    ):
+        result = {}
+
+    nested_damage = result.get(
+        "damage"
+    )
+
+    if isinstance(
+        nested_damage,
+        dict,
+    ):
+        result = nested_damage
+
+    denomination_result = (
+        denomination_result
+        if isinstance(
+            denomination_result,
+            dict,
+        )
+        else {}
+    )
+
     return {
-        "image_path": image_path,
-        "is_damaged": len(active) > 0,
-        "active_damage_labels": active,
-        "evidence_scores": inner.get("evidence_scores", {}),
-        "preprocessing_metadata": inner.get("preprocessing_metadata", {}),
-        "dynamic_thresholds": inner.get("dynamic_thresholds", {}),
-        "classification_status": inner.get("classification_status", "unknown"),
+
+        "image_path":
+            image_path,
+
+        "is_damaged":
+            is_damaged(
+                classification_result
+            ),
+
+        "active_damage_labels":
+            get_active_damage_labels(
+                classification_result
+            ),
+
+        "evidence_scores":
+            get_damage_evidence(
+                classification_result
+            ),
+
+        "preprocessing_metadata":
+            result.get(
+                "preprocessing_metadata",
+                {},
+            ),
+
+        "dynamic_thresholds":
+            result.get(
+                "dynamic_thresholds",
+                {},
+            ),
+
+        "classification_status":
+            result.get(
+                "classification_status"
+            ),
+
+        # ----------------------------------------------------
+        # YASH INFORMATION
+        # ----------------------------------------------------
+
+        "denomination":
+            denomination_result.get(
+                "denomination"
+            )
+            or denomination_result.get(
+                "value"
+            ),
+
+        "denomination_confidence":
+            denomination_result.get(
+                "confidence"
+            ),
+
+        "denomination_accepted":
+            denomination_result.get(
+                "accepted"
+            ),
+
+        "is_background":
+            denomination_result.get(
+                "is_background",
+                False,
+            ),
     }
+
+
+# ============================================================
+# LOAD SAKSHI MODULE
+# ============================================================
+
+def _load_assessment_function():
+
+    severity_path = str(
+        SEVERITY_MODULE_DIR
+    )
+
+    if severity_path not in sys.path:
+        sys.path.insert(
+            0,
+            severity_path,
+        )
+
+    from interface import assess_damage
+
+    return assess_damage
+
+
+# ============================================================
+# REAL SAKSHI ASSESSMENT
+# ============================================================
+
+def run_sakshi_assessment(
+    image_input,
+
+    denomination_result:
+        Dict[str, Any],
+
+    damage_result:
+        Dict[str, Any],
+):
+
+    assess_damage = (
+        _load_assessment_function()
+    )
+
+    active_damage_labels = (
+        get_active_damage_labels(
+            damage_result
+        )
+    )
+
+    denomination = (
+        denomination_result.get(
+            "denomination"
+        )
+        or denomination_result.get(
+            "value"
+        )
+    )
+
+    denomination_confidence = (
+        denomination_result.get(
+            "confidence"
+        )
+    )
+
+    # Do not pass Background as note geometry.
+    if denomination_result.get(
+        "is_background",
+        False,
+    ):
+        denomination = None
+
+    if (
+        denomination is not None
+        and str(
+            denomination
+        ).lower()
+        in {
+            "unknown",
+            "background",
+            "none",
+        }
+    ):
+        denomination = None
+
+    return assess_damage(
+        image_input=image_input,
+
+        damage_labels=(
+            active_damage_labels
+        ),
+
+        currency=denomination,
+
+        denomination_confidence=(
+            denomination_confidence
+        ),
+
+        evidence_scores=(
+            damage_result.get(
+                "evidence_scores",
+                {},
+            )
+        ),
+
+        dynamic_thresholds=(
+            damage_result.get(
+                "dynamic_thresholds",
+                {},
+            )
+        ),
+
+        preprocessing_metadata=(
+            damage_result.get(
+                "preprocessing_metadata",
+                {},
+            )
+        ),
+
+        classification_status=(
+            damage_result.get(
+                "classification_status"
+            )
+        ),
+    )

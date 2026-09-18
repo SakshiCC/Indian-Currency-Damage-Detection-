@@ -27,9 +27,6 @@ VINIT_DIR = PROJECT_ROOT / "vinit-damage-module"
 if str(VINIT_DIR) not in sys.path:
     sys.path.insert(0, str(VINIT_DIR))
 
-from clip_damage_classifier.interface import DamageClassifier
-
-
 class VinitDamageAdapter:
     """
     Thin adapter wrapping Vinit's DamageClassifier without altering V3.1 logic.
@@ -44,7 +41,7 @@ class VinitDamageAdapter:
         self.device = device
         self.calibration_version = calibration_version
         self.use_preprocessing = use_preprocessing
-        self._classifier: Optional[DamageClassifier] = None
+        self._classifier = None
         self._initialize()
 
     def _initialize(self):
@@ -53,6 +50,7 @@ class VinitDamageAdapter:
             logger.info(
                 f"Initializing Vinit DamageClassifier (device={self.device}, version={self.calibration_version})..."
             )
+            from clip_damage_classifier.interface import DamageClassifier
             self._classifier = DamageClassifier(
                 device=self.device,
                 use_preprocessing=self.use_preprocessing,
@@ -144,3 +142,8 @@ def predict_damage_safe(
 ) -> Dict[str, Any]:
     """Module-level convenience function."""
     return get_vinit_adapter(device=device, calibration_version=calibration_version).predict(image_input)
+
+
+# Module-level alias for backward compatibility
+damage_adapter = get_vinit_adapter()
+
